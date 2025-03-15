@@ -26,6 +26,14 @@ jobs:
       
     - name: Run tests
       run: npm test
+
+    - name: Update version from release tag
+      run: |
+        # Get version from release tag (remove 'v' prefix if present)
+        VERSION=${GITHUB_REF#refs/tags/}
+        VERSION=${VERSION#v}
+        # Update package.json version
+        npm version $VERSION --no-git-tag-version
       
     - name: Publish to npm
       run: npm publish

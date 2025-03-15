@@ -84,8 +84,8 @@ Here are some popular .NET tools you can try:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/redth/npxdotnettool.git
-cd npxdotnettool
+git clone https://github.com/redth/npx-dntx.git
+cd npx-dntx
 ```
 
 2. Install dependencies:
