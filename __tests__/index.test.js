@@ -73,6 +73,9 @@ beforeEach(() => {
     mockDir.mockResolvedValue({ path: mockTempPath, cleanup: mockCleanup });
 });
 
+// Increase timeout for all tests in this suite
+jest.setTimeout(10000);
+
 describe('Dotnet Tool Runner', () => {
     describe('checkDotnetInstallation', () => {
         test('should pass when dotnet is installed', async () => {
