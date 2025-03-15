@@ -1,0 +1,55 @@
+{
+  "name": "dntx",
+  "version": "1.0.0",
+  "description": "Temporarily install and run dotnet tools via npx",
+  "main": "index.js",
+  "bin": {
+    "dntx": "./bin/index.js"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch",
+    "build": "npm run test",
+    "prepare-publish": "npm run build && npm pack --dry-run",
+    "prepublishOnly": "npm run build",
+    "version": "git add -A",
+    "postversion": "git push && git push --tags"
+  },
+  "keywords": [
+    "npx",
+    "dotnet",
+    "tool",
+    "cli",
+    "dotnet-tool",
+    "dotnet-cli"
+  ],
+  "author": "Jon Dick (redth)",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/redth/npxdotnettool.git"
+  },
+  "bugs": {
+    "url": "https://github.com/redth/npxdotnettool/issues"
+  },
+  "homepage": "https://github.com/redth/npxdotnettool#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "dependencies": {
+    "commander": "^11.1.0",
+    "tmp-promise": "^3.0.3"
+  },
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "mock-spawn": "^0.2.6"
+  },
+  "jest": {
+    "transform": {},
+    "testEnvironment": "node",
+    "moduleNameMapper": {
+      "#(.*)": "<rootDir>/node_modules/$1"
+    }
+  }
+} 

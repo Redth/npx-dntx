@@ -1,0 +1,23 @@
+# Tests
+__tests__/
+*.test.js
+jest.config.js
+
+# Development
+.git/
+.github/
+.gitignore
+.npmrc
+*.log
+*.tgz
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+node_modules/
+coverage/
+.DS_Store 
