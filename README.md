@@ -1,6 +1,16 @@
 # dntx
 
-A simple CLI tool to temporarily install and run .NET tools via npx. No global installation required!
+A simple node CLI tool to temporarily install and run .NET tools via npx. No global installation required!
+
+
+https://github.com/user-attachments/assets/48da0e8b-bc7f-446a-bbfa-155961f98c40
+
+
+## Why?
+There's currently no way to [temporarily install](https://github.com/dotnet/sdk/issues/47517) a .NET tool and have it execute in a single command like NPX allows for node projects.  
+
+## How?
+When you run the tool, it captures the first arg passed into it as the dotnet tool NuGet Package Id and attempts to install it to a local temporary path (eg: `dotnet tool install --tool-path "/tmp/abc123" NuGetPackageIdHere --version=1.2.3`).  Once it's installed, it infers the executable command from the installed location and runs the process, passing along any remaining args from the original call.  Once the process exits, the temporary installed dotnet tool files are cleaned up.
 
 ## Quick Start
 
