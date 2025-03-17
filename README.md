@@ -66,16 +66,6 @@ npx dntx androidsdk.tool sdk info --format=json
 - 🔄 Works cross-platform
 - 🚀 Simple and intuitive interface
 
-## Common .NET Tools
-
-Here are some popular .NET tools you can try:
-
-- `microsoft.dotnet-httprepl` - HTTP REPL command-line tool
-- `dotnet-ef` - Entity Framework Core tools
-- `dotnet-outdated-tool` - Check for outdated NuGet packages
-- `dotnet-format` - Code formatter
-- `dotnet-trace` - Performance analysis tool
-
 ## Development
 
 ### Setup
