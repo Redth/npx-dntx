@@ -7,7 +7,20 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 
-const execAsync = promisify(exec);
+// Use execAsync with a custom implementation that captures both stdout and stderr
+const execAsync = (command) => {
+    return new Promise((resolve, reject) => {
+        exec(command, (error, stdout, stderr) => {
+            if (error) {
+                error.stdout = stdout;
+                error.stderr = stderr;
+                reject(error);
+            } else {
+                resolve({ stdout, stderr });
+            }
+        });
+    });
+};
 
 export const program = new Command();
 
@@ -34,7 +47,7 @@ export function parsePackageId(packageId) {
 
 // Install dotnet tool and return the tool command name
 export async function installDotnetTool(packageId, toolPath, version) {
-    console.log(`📦 Installing ${packageId}...`);
+    //process.stdout.write(`📦 Installing ${packageId}...\n`);
     
     try {
         // Construct the install command with optional version
@@ -42,7 +55,14 @@ export async function installDotnetTool(packageId, toolPath, version) {
         const command = `dotnet tool install --tool-path "${toolPath}" ${packageId} ${versionArg}`.trim();
         
         // Execute the tool installation
-        const { stdout } = await execAsync(command);
+        const { stdout, stderr } = await execAsync(command);
+        
+        // Check if there's error information in stderr
+        if (stderr && stderr.trim().length > 0) {
+            // If the stderr contains error messages but the process didn't exit with an error code,
+            // we'll still log the warning but continue
+            process.stderr.write(`⚠️  Warning during tool installation: ${stderr.trim()}\n`);
+        }
         
         let toolCommand = null;
         
@@ -75,7 +95,7 @@ export async function installDotnetTool(packageId, toolPath, version) {
                 }
             }
         } catch (dirError) {
-            console.log(`Could not inspect tool directory: ${dirError.message}, falling back to output parsing.`);
+            process.stderr.write(`Could not inspect tool directory: ${dirError.message}, falling back to output parsing.\n`);
         }
         
         // If we couldn't determine the tool name from files, try to parse from output
@@ -86,14 +106,22 @@ export async function installDotnetTool(packageId, toolPath, version) {
             if (match && match[1]) {
                 toolCommand = match[1];
             } else {
-                throw new Error('Could not determine tool command name');
+                throw new Error(`Could not determine tool command name. Installation output: ${stdout.trim()}`);
             }
         }
         
         return toolCommand;
     } catch (error) {
-        console.error('Failed to install tool:', error.stderr || error.message);
-        throw error;
+        // Create a more descriptive error message including stderr if available
+        const errorDetails = error.stderr 
+            ? `${error.message}\nTool installation error details: ${error.stderr.trim()}`
+            : error.message;
+            
+        // Log the error to stderr
+        process.stderr.write(`❌ Failed to install tool: ${errorDetails}\n`);
+        
+        // Throw a new error with the enhanced details
+        throw new Error(`Failed to install ${packageId}${version ? ` version ${version}` : ''}: ${errorDetails}`);
     }
 }
 
@@ -105,7 +133,7 @@ export async function runDotnetTool(toolName, toolPath, args) {
     
     // Show the command that's being run with all arguments - write to stderr to avoid interfering with stdout
     const displayCommand = `${toolName} ${args.join(' ')}`;
-    process.stdout.write(`🚀 Running: ${displayCommand}\n`);
+    //process.stdout.write(`🚀 Running: ${displayCommand}\n`);
     
     return new Promise((resolve, reject) => {
         // Use spawn with direct stdio inheritance for transparent passthrough
@@ -158,14 +186,14 @@ program
                 // Run the tool with the provided arguments
                 await runDotnetTool(toolName, tmpDir.path, toolArgs);
             } catch (error) {
-                console.error('\x1b[31m%s\x1b[0m', '❌ Error:', error.message);
+                process.stderr.write(`❌ Error: ${error.message}\n`);
                 process.exit(1);
             } finally {
                 // Clean up the temporary directory
                 tmpDir.cleanup();
             }
         } catch (error) {
-            console.error('\x1b[31m%s\x1b[0m', '❌ Error:', error.message);
+            process.stderr.write(`❌ Error: ${error.message}\n`);
             process.exit(1);
         }
     });

@@ -7,19 +7,7 @@ A simple CLI tool to temporarily install and run .NET tools via npx. No global i
 Run any .NET tool directly without installation:
 
 ```bash
-npx dntx@latest <package-id> [arguments]
-```
-
-For example:
-```bash
-# Run the HTTP REPL tool
-npx dntx@latest microsoft.dotnet-httprepl
-
-# Run a specific version of a tool
-npx dntx@latest microsoft.dotnet-httprepl@6.0.0
-
-# Run with arguments
-npx dntx@latest microsoft.dotnet-httprepl https://api.example.com
+npx dntx[@version] <package-id> [arguments]
 ```
 
 ## Prerequisites
@@ -39,17 +27,17 @@ npx dntx <package-id> [arguments]
 
 1. Run a tool without version specification:
 ```bash
-npx dntx microsoft.dotnet-httprepl
+npx dntx androidsdk.tool
 ```
 
 2. Run a tool with a specific version:
 ```bash
-npx dntx microsoft.dotnet-httprepl@6.0.0
+npx dntx androidsdk.tool@0.19.0
 ```
 
 3. Run a tool with arguments:
 ```bash
-npx dntx microsoft.dotnet-httprepl https://api.example.com
+npx dntx androidsdk.tool sdk info --format=json
 ```
 
 ### How It Works
