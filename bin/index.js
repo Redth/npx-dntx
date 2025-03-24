@@ -2,15 +2,13 @@
 import { Command } from 'commander';
 import { dir } from 'tmp-promise';
 import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import fs from 'fs/promises';
 
 // Use execAsync with a custom implementation that captures both stdout and stderr
 const execAsync = (command) => {
     return new Promise((resolve, reject) => {
-        exec(command, (error, stdout, stderr) => {
+        exec(command, { env: { ...process.env } }, (error, stdout, stderr) => {
             if (error) {
                 error.stdout = stdout;
                 error.stderr = stderr;
@@ -30,7 +28,7 @@ export async function checkDotnetInstallation() {
         await execAsync('dotnet --version');
         return true;
     } catch (error) {
-        process.stderr.write('\x1b[31m%s\x1b[0m', '❌ Error: .NET SDK is not installed!\n');
+        process.stderr.write('❌ Error: .NET SDK is not installed!\n');
         process.stderr.write('Please install the .NET SDK from https://dotnet.microsoft.com/download \n');
         process.exit(1);
     }
@@ -132,7 +130,7 @@ export async function runDotnetTool(toolName, toolPath, args) {
     const toolExePath = path.join(toolPath, exeName);
     
     // Show the command that's being run with all arguments - write to stderr to avoid interfering with stdout
-    const displayCommand = `${toolName} ${args.join(' ')}`;
+    //const displayCommand = `${toolName} ${args.join(' ')}`;
     //process.stdout.write(`🚀 Running: ${displayCommand}\n`);
     
     return new Promise((resolve, reject) => {
