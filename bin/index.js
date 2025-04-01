@@ -7,8 +7,48 @@ import fs from 'fs/promises';
 
 // Use execAsync with a custom implementation that captures both stdout and stderr
 const execAsync = (command) => {
-    return new Promise((resolve, reject) => {
-        exec(command, { env: { ...process.env } }, (error, stdout, stderr) => {
+    return new Promise(async (resolve, reject) => {
+        const env = { ...process.env };
+        
+        // Check if PROGRAMFILES(X86) is missing and we're on Windows
+        if (process.platform === 'win32' && !env['PROGRAMFILES(X86)']) {
+
+            if (env['ProgramFiles(x86)']) {
+                // If ProgramFiles(x86) is set, use it directly
+                env['PROGRAMFILES(X86)'] = env['ProgramFiles(x86)'];
+            } else {
+                try {
+                    // Read Program Files (x86) path from registry
+                    const { stdout } = await new Promise((resolveReg, rejectReg) => {
+                        exec('reg query "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" /v "ProgramFilesDir (x86)"', 
+                            (error, stdout, stderr) => {
+                                if (error) {
+                                    rejectReg(error);
+                                } else {
+                                    resolveReg({ stdout, stderr });
+                                }
+                            }
+                        );
+                    });
+
+                    // Parse the registry output - it comes in format:
+                    // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion
+                    //     ProgramFilesDir (x86)    REG_SZ    C:\Program Files (x86)
+                    const match = stdout.match(/ProgramFilesDir \(x86\)\s+REG_SZ\s+(.+)/);
+                    if (match) {
+                        env['PROGRAMFILES(X86)'] = match[1].trim();
+                    } else {
+                        // Fallback if we can't read from registry
+                        env['PROGRAMFILES(X86)'] = process.env.PROGRAMFILES?.replace(' (x86)', '') || 'C:\\Program Files (x86)';
+                    }
+                } catch (error) {
+                    // Fallback if registry query fails
+                    env['PROGRAMFILES(X86)'] = process.env.PROGRAMFILES?.replace(' (x86)', '') || 'C:\\Program Files (x86)';
+                }
+            }
+        }
+
+        exec(command, { env }, (error, stdout, stderr) => {
             if (error) {
                 error.stdout = stdout;
                 error.stderr = stderr;
