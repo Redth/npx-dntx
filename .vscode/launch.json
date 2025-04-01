@@ -1,0 +1,27 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Debug via NPX",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "runtimeExecutable": "npx",
+            "cwd": "${workspaceFolder}",
+            "args": [
+                "-y",
+                "node",
+                "bin/index.js",
+                "AndroidSdk.Tool",
+                "sdk",
+                "info"
+            ],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "console": "integratedTerminal"
+        }
+    ]
+}
