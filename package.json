@@ -1,6 +1,6 @@
 {
   "name": "dntx",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Temporarily install and run dotnet tools via npx",
   "main": "index.js",
   "bin": {
