@@ -76,10 +76,10 @@ const execAsync = (command) => {
     });
 };
 
-export const program = new Command();
+const program = new Command();
 
 // Check if dotnet SDK is installed
-export async function checkDotnetInstallation() {
+async function checkDotnetInstallation() {
     try {
         await execAsync('dotnet --version');
         return true;
@@ -91,7 +91,7 @@ export async function checkDotnetInstallation() {
 }
 
 // Parse package-id and version (if specified as package-id@version)
-export function parsePackageId(packageId) {
+function parsePackageId(packageId) {
     const parts = packageId.split('@');
     return {
         packageId: parts[0],
@@ -100,7 +100,7 @@ export function parsePackageId(packageId) {
 }
 
 // Install dotnet tool and return the tool command name
-export async function installDotnetTool(packageId, toolPath, version) {
+async function installDotnetTool(packageId, toolPath, version) {
     //process.stdout.write(`📦 Installing ${packageId}...\n`);
     
     try {
@@ -180,7 +180,7 @@ export async function installDotnetTool(packageId, toolPath, version) {
 }
 
 // Run the installed dotnet tool
-export async function runDotnetTool(toolName, toolPath, args) {
+async function runDotnetTool(toolName, toolPath, args) {
     // On Windows, add .exe extension
     const exeName = process.platform === 'win32' ? `${toolName}.exe` : toolName;
     const toolExePath = path.join(toolPath, exeName);
@@ -252,4 +252,17 @@ program
         }
     });
 
-program.parse(process.argv);
+// Only run the command parser when this is the main module being executed
+// This prevents program.parse from being executed when the file is imported in tests
+if (require.main === module) {
+    program.parse(process.argv);
+}
+
+// Export functions and objects needed for testing
+module.exports = {
+    program,
+    checkDotnetInstallation,
+    parsePackageId,
+    installDotnetTool,
+    runDotnetTool
+};

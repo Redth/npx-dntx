@@ -1,14 +1,12 @@
-import { jest } from '@jest/globals';
-import path from 'path';
-import fs from 'fs/promises';
-import { exec } from 'child_process';
-import { fileURLToPath } from 'url';
-import { promisify } from 'util';
-import os from 'os';
+const { expect, describe, it, beforeEach, afterEach, beforeAll } = require('@jest/globals');
+const path = require('path');
+const fs = require('fs').promises;
+const { exec, execSync } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
 
 const execAsync = promisify(exec);
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const CLI_PATH = path.resolve(__dirname, '../bin/index.js');
+const CLI_PATH = path.resolve(__dirname, '../bin/index.cjs');
 
 // Global test timeout (CLI operations can take time)
 jest.setTimeout(60000);

@@ -1,9 +1,14 @@
-import { jest } from '@jest/globals';
-import { program, checkDotnetInstallation, parsePackageId, installDotnetTool, runDotnetTool } from '../bin/index.js';
-import path from 'path';
-import fs from 'fs/promises';
-import { execSync } from 'child_process';
-import os from 'os';
+const { expect, describe, it, beforeEach, afterEach, beforeAll } = require('@jest/globals');
+const { program, checkDotnetInstallation, parsePackageId, installDotnetTool, runDotnetTool } = require('../bin/index.cjs');
+const path = require('path');
+const fs = require('fs').promises;
+const { exec, execSync } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
+
+const execAsync = promisify(exec);
+const CLI_PATH = path.resolve(__dirname, '../bin/');
+
 
 // Global test timeout (tools can take some time to install)
 jest.setTimeout(30000);

@@ -1,10 +1,10 @@
-import { jest } from '@jest/globals';
-import { installDotnetTool, runDotnetTool } from '../bin/index.js';
-import path from 'path';
-import fs from 'fs/promises';
-import { exec, execSync } from 'child_process';
-import { promisify } from 'util';
-import os from 'os';
+const { expect, describe, it, beforeEach, afterEach, beforeAll } = require('@jest/globals');
+const { installDotnetTool, runDotnetTool } = require('../bin/index.cjs');
+const path = require('path');
+const fs = require('fs').promises;
+const { exec, execSync } = require('child_process');
+const { promisify } = require('util');
+const os = require('os');
 
 const execAsync = promisify(exec);
 

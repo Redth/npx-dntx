@@ -2,9 +2,9 @@
   "name": "dntx",
   "version": "1.0.6",
   "description": "Temporarily install and run dotnet tools via npx",
-  "main": "index.js",
+  "main": "./bin/index.cjs",
   "bin": {
-    "dntx": "./bin/index.js"
+    "dntx": "./bin/index.cjs"
   },
   "scripts": {
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
@@ -13,7 +13,8 @@
     "prepare-publish": "npm run build && npm pack --dry-run",
     "prepublishOnly": "npm run build",
     "version": "git add -A",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags",
+    "start": "node ./bin/index.cjs"
   },
   "keywords": [
     "npx",
