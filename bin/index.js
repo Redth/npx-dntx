@@ -10,40 +10,55 @@ const execAsync = (command) => {
     return new Promise(async (resolve, reject) => {
         const env = { ...process.env };
         
-        // Check if PROGRAMFILES(X86) is missing and we're on Windows
-        if (process.platform === 'win32' && !env['PROGRAMFILES(X86)']) {
+        if (process.platform === 'win32') {
+            const envVarsToCheck = [
+                { name: 'PROGRAMFILES', regKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion', regValue: 'ProgramFilesDir' },
+                { name: 'PROGRAMFILES(X86)', regKey: 'HKEY_LOCAL_MACHINE\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion', regValue: 'ProgramFilesDir (x86)' },
+                { name: 'USERPROFILE', regKey: 'HKEY_CURRENT_USER\\Volatile Environment', regValue: 'USERPROFILE' },
+                { name: 'APPDATA', regKey: 'HKEY_CURRENT_USER\\Volatile Environment', regValue: 'APPDATA' },
+                { name: 'LOCALAPPDATA', regKey: 'HKEY_CURRENT_USER\\Volatile Environment', regValue: 'LOCALAPPDATA' }
+            ];
 
-            if (env['ProgramFiles(x86)']) {
-                // If ProgramFiles(x86) is set, use it directly
-                env['PROGRAMFILES(X86)'] = env['ProgramFiles(x86)'];
-            } else {
-                try {
-                    // Read Program Files (x86) path from registry
-                    const { stdout } = await new Promise((resolveReg, rejectReg) => {
-                        exec('reg query "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion" /v "ProgramFilesDir (x86)"', 
-                            (error, stdout, stderr) => {
-                                if (error) {
-                                    rejectReg(error);
-                                } else {
-                                    resolveReg({ stdout, stderr });
+            for (const envVar of envVarsToCheck) {
+                if (!env[envVar.name]) {
+                    try {
+                        // Read value from registry
+                        const { stdout } = await new Promise((resolveReg, rejectReg) => {
+                            exec(`reg query "${envVar.regKey}" /v "${envVar.regValue}"`, 
+                                (error, stdout, stderr) => {
+                                    if (error) {
+                                        rejectReg(error);
+                                    } else {
+                                        resolveReg({ stdout, stderr });
+                                    }
                                 }
-                            }
-                        );
-                    });
+                            );
+                        });
 
-                    // Parse the registry output - it comes in format:
-                    // HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows\CurrentVersion
-                    //     ProgramFilesDir (x86)    REG_SZ    C:\Program Files (x86)
-                    const match = stdout.match(/ProgramFilesDir \(x86\)\s+REG_SZ\s+(.+)/);
-                    if (match) {
-                        env['PROGRAMFILES(X86)'] = match[1].trim();
-                    } else {
-                        // Fallback if we can't read from registry
-                        env['PROGRAMFILES(X86)'] = process.env.PROGRAMFILES?.replace(' (x86)', '') || 'C:\\Program Files (x86)';
+                        // Parse the registry output
+                        const match = stdout.match(new RegExp(`${envVar.regValue.replace(/\s/g, '\\s+')}\\s+REG_[^\\s]+\\s+(.+)`));
+                        if (match) {
+                            // For User Shell Folders, we need to expand any environment variables in the path
+                            let value = match[1].trim();
+                            if (envVar.regKey.includes('User Shell Folders')) {
+                                // Replace %USERPROFILE% if present
+                                value = value.replace(/%([^%]+)%/g, (_, varName) => env[varName] || '');
+                            }
+                            env[envVar.name] = value;
+                        }
+                    } catch (error) {
+                        // If we failed to get USERPROFILE, try a fallback using HOMEDRIVE and HOMEPATH
+                        if (envVar.name === 'USERPROFILE' && env.HOMEDRIVE && env.HOMEPATH) {
+                            env.USERPROFILE = env.HOMEDRIVE + env.HOMEPATH;
+                        }
+                        // For APPDATA and LOCALAPPDATA, try constructing from USERPROFILE if available
+                        else if (envVar.name === 'APPDATA' && env.USERPROFILE) {
+                            env.APPDATA = env.USERPROFILE + '\\AppData\\Roaming';
+                        }
+                        else if (envVar.name === 'LOCALAPPDATA' && env.USERPROFILE) {
+                            env.LOCALAPPDATA = env.USERPROFILE + '\\AppData\\Local';
+                        }
                     }
-                } catch (error) {
-                    // Fallback if registry query fails
-                    env['PROGRAMFILES(X86)'] = process.env.PROGRAMFILES?.replace(' (x86)', '') || 'C:\\Program Files (x86)';
                 }
             }
         }
