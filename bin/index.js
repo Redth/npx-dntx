@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-import { Command } from 'commander';
-import { dir } from 'tmp-promise';
-import { exec, spawn } from 'child_process';
-import path from 'path';
-import fs from 'fs/promises';
+
+const { Command } = require('commander');
+const { dir } = require('tmp-promise');
+const { exec, spawn } = require('child_process');
+const path = require('path');
+const fs = require('fs').promises;
 
 // Use execAsync with a custom implementation that captures both stdout and stderr
 const execAsync = (command) => {
@@ -251,11 +252,4 @@ program
         }
     });
 
-// Only run main if this is the main module
-const isMainModule = typeof require !== 'undefined' ? 
-    require.main === module : 
-    import.meta.url === (process.argv[1] ? new URL(`file://${process.argv[1]}`).href : undefined);
-
-if (isMainModule) {
-    program.parse(process.argv);
-}
+program.parse(process.argv);

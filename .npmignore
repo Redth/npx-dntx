@@ -21,3 +21,10 @@ jest.config.js
 node_modules/
 coverage/
 .DS_Store 
+
+!bin/
+!bin/*
+# Allow package.json, README, and LICENSE
+!package.json
+!README.md
+!LICENSE
